@@ -3,11 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Nairi VPN</title>
-    
-    <!-- PWA Settings -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Nairi VPN Full</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -17,8 +13,6 @@
         
         :root {
             --arm-orange: #F2A800;
-            --arm-red: #FF0000;
-            --arm-blue: #0033A0;
         }
 
         body { 
@@ -28,39 +22,224 @@
             margin: 0;
             height: 100vh;
             display: flex;
+            flex-direction: column;
             overflow: hidden;
-            -webkit-tap-highlight-color: transparent;
         }
 
+        /* Безопасные зоны для iPhone */
         .safe-top { padding-top: env(safe-area-inset-top); }
         .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
 
-        .app-shell {
-            background-color: #0c0c0c;
-            width: 100%;
-            height: 100%;
+        .app-content {
+            flex: 1;
             display: flex;
             flex-direction: column;
+            overflow-y: auto;
             position: relative;
         }
 
-        .tricolor-header {
-            height: 4px;
+        .nav-bar {
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
             display: flex;
-            width: 100%;
-            position: absolute;
-            top: 0;
+            justify-content: space-around;
+            padding: 12px 0;
             z-index: 100;
         }
 
         .power-btn {
-            width: 42vw;
-            height: 42vw;
-            max-width: 160px;
-            max-height: 160px;
+            width: 160px;
+            height: 160px;
             border-radius: 50%;
             background: #111;
-            border: 6px solid #1a1a1a;
+            border: 8px solid #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin: 20px 0;
+        }
+
+        .power-btn.active {
+            border-color: var(--arm-orange);
+            box-shadow: 0 0 30px rgba(242, 168, 0, 0.3);
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-cols: 1fr 1fr;
+            gap: 12px;
+            padding: 0 20px 20px 20px;
+        }
+
+        .stat-card {
+            background: #151515;
+            border: 1px solid #222;
+            border-radius: 18px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        #settingsModal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            padding: 40px 20px;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Верхний флаг -->
+    <div class="h-1 flex w-full shrink-0">
+        <div class="bg-red-600 flex-1"></div>
+        <div class="bg-blue-600 flex-1"></div>
+        <div class="bg-orange-500 flex-1"></div>
+    </div>
+
+    <!-- Модалка настроек -->
+    <div id="settingsModal">
+        <h2 class="text-2xl font-black text-orange-500 mb-2 italic">IP СЕРВЕРА</h2>
+        <p class="text-xs text-neutral-500 mb-6 tracking-widest uppercase">Введите адрес вашего узла в Армении</p>
+        <input type="text" id="ipInput" placeholder="Напр: 172.16.254.1" 
+            class="w-full bg-neutral-900 border border-neutral-800 p-4 rounded-2xl text-white font-mono mb-4 text-lg">
+        <button id="saveBtn" class="w-full bg-orange-600 py-4 rounded-2xl font-black uppercase text-lg">Сохранить</button>
+        <button id="closeBtn" class="w-full text-neutral-500 mt-6 font-bold uppercase text-xs">Закрыть</button>
+    </div>
+
+    <!-- Основная область -->
+    <div class="app-content safe-top">
+        <!-- Header -->
+        <div class="p-6 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center">
+                    <i data-lucide="shield" class="text-white"></i>
+                </div>
+                <div>
+                    <h1 class="font-black text-xl italic tracking-tighter leading-none">NAIRI</h1>
+                    <span class="text-[8px] font-bold text-neutral-500 tracking-widest uppercase">Premium VPN</span>
+                </div>
+            </div>
+            <button id="openSet" class="text-neutral-500 p-2"><i data-lucide="sliders"></i></button>
+        </div>
+
+        <!-- Центральная кнопка -->
+        <div class="flex flex-col items-center justify-center flex-grow">
+            <button id="vpnToggle" class="power-btn">
+                <i data-lucide="power" id="pwrIcon" class="w-12 h-12 text-neutral-800"></i>
+                <span id="statusTxt" class="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600 mt-3">Off</span>
+            </button>
+            <div class="text-center mt-4">
+                <p id="ipLabel" class="text-neutral-500 font-mono text-[10px] mb-1">IP: Не настроен</p>
+                <div class="flex items-center justify-center gap-2">
+                    <div id="dot" class="w-1.5 h-1.5 rounded-full bg-neutral-800"></div>
+                    <span id="statusLabel" class="text-[10px] font-bold text-neutral-600 uppercase">Disconnected</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Статистика -->
+        <div class="stat-grid">
+            <div class="stat-card">
+                <span class="text-[8px] font-black text-neutral-600 uppercase block mb-1">Download</span>
+                <p class="text-xl font-black italic">0.0 <span class="text-[10px] font-normal text-neutral-700 uppercase">Mb/s</span></p>
+            </div>
+            <div class="stat-card">
+                <span class="text-[8px] font-black text-neutral-600 uppercase block mb-1">Ping</span>
+                <p class="text-xl font-black italic">-- <span class="text-[10px] font-normal text-neutral-700 uppercase">ms</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Нижнее меню (Теперь оно всегда внизу) -->
+    <nav class="nav-bar safe-bottom">
+        <div class="flex flex-col items-center gap-1 text-orange-500 cursor-pointer">
+            <i data-lucide="shield" class="w-6 h-6"></i>
+            <span class="text-[8px] font-bold uppercase tracking-widest">VPN</span>
+        </div>
+        <div class="flex flex-col items-center gap-1 text-neutral-700 cursor-pointer">
+            <i data-lucide="globe" class="w-6 h-6"></i>
+            <span class="text-[8px] font-bold uppercase tracking-widest">Серверы</span>
+        </div>
+        <div class="flex flex-col items-center gap-1 text-neutral-700 cursor-pointer">
+            <i data-lucide="user" class="w-6 h-6"></i>
+            <span class="text-[8px] font-bold uppercase tracking-widest">Профиль</span>
+        </div>
+    </nav>
+
+    <script>
+        lucide.createIcons();
+
+        const vpnBtn = document.getElementById('vpnToggle');
+        const pwrIcon = document.getElementById('pwrIcon');
+        const statusTxt = document.getElementById('statusTxt');
+        const ipLabel = document.getElementById('ipLabel');
+        const dot = document.getElementById('dot');
+        const statusLabel = document.getElementById('statusLabel');
+
+        const modal = document.getElementById('settingsModal');
+        const openSet = document.getElementById('openSet');
+        const closeBtn = document.getElementById('closeBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const ipInput = document.getElementById('ipInput');
+
+        let isConnected = false;
+        let savedIp = localStorage.getItem('nairi_ip') || '';
+
+        if(savedIp) {
+            ipLabel.innerText = "IP: " + savedIp;
+            ipInput.value = savedIp;
+        }
+
+        openSet.onclick = () => modal.style.display = 'flex';
+        closeBtn.onclick = () => modal.style.display = 'none';
+
+        saveBtn.onclick = () => {
+            const val = ipInput.value.trim();
+            if(val) {
+                localStorage.setItem('nairi_ip', val);
+                savedIp = val;
+                ipLabel.innerText = "IP: " + savedIp;
+                modal.style.display = 'none';
+            }
+        };
+
+        vpnBtn.onclick = () => {
+            if(!savedIp) { modal.style.display = 'flex'; return; }
+
+            if(!isConnected) {
+                statusTxt.innerText = "Connecting...";
+                setTimeout(() => {
+                    isConnected = true;
+                    vpnBtn.classList.add('active');
+                    pwrIcon.classList.add('text-orange-500');
+                    statusTxt.innerText = "ON";
+                    statusTxt.classList.add('text-orange-500');
+                    dot.classList.add('bg-green-500');
+                    statusLabel.innerText = "Connected";
+                    statusLabel.classList.add('text-green-500');
+                }, 800);
+            } else {
+                isConnected = false;
+                vpnBtn.classList.remove('active');
+                pwrIcon.classList.remove('text-orange-500');
+                statusTxt.innerText = "Off";
+                statusTxt.classList.remove('text-orange-500');
+                dot.classList.remove('bg-green-500');
+                statusLabel.innerText = "Disconnected";
+                statusLabel.classList.remove('text-green-500');
+            }
+        };
+    </script>
+</body>
+</html>
+
             display: flex;
             flex-direction: column;
             align-items: center;
