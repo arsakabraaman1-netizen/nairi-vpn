@@ -41,6 +41,7 @@
             height: 100%;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .tricolor-header {
@@ -52,508 +53,204 @@
             z-index: 100;
         }
 
-        /* Адаптивный размер кнопки */
         .power-btn {
-            width: 45vw;
-            height: 45vw;
-            max-width: 180px;
-            max-height: 180px;
+            width: 42vw;
+            height: 42vw;
+            max-width: 160px;
+            max-height: 160px;
             border-radius: 50%;
             background: #111;
-            border: 8px solid #1a1a1a;
+            border: 6px solid #1a1a1a;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         .power-btn.active {
             border-color: var(--arm-orange);
-            box-shadow: 0 0 40px rgba(242, 168, 0, 0.2);
+            box-shadow: 0 0 40px rgba(242, 168, 0, 0.25);
             transform: scale(1.05);
         }
 
-        /* Панель настроек */
         #settingsPanel {
             position: absolute;
             inset: 0;
-            background: rgba(0,0,0,0.95);
-            z-index: 200;
+            background: rgba(0,0,0,0.98);
+            z-index: 300;
             display: none;
             flex-direction: column;
-            padding: 2rem;
+            padding: 1.5rem;
             justify-content: center;
         }
 
         .stat-card {
             background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 1.25rem;
-            padding: 0.75rem 1rem;
-        }
-
-        .ornament-bg {
-            position: absolute;
-            inset: 0;
-            opacity: 0.03;
-            pointer-events: none;
-            z-index: 0;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 1rem;
+            padding: 0.75rem;
         }
     </style>
 </head>
 <body>
 
-    <div class="app-shell relative">
+    <div class="app-shell">
         <div class="tricolor-header">
             <div class="bg-[#FF0000] flex-1"></div>
             <div class="bg-[#0033A0] flex-1"></div>
             <div class="bg-[#F2A800] flex-1"></div>
         </div>
 
-        <!-- Settings Panel -->
+        <!-- Настройки -->
         <div id="settingsPanel">
-            <h2 class="text-2xl font-black mb-2 uppercase italic text-orange-500">Настройки</h2>
-            <p class="text-xs text-neutral-500 mb-6 uppercase tracking-widest">Введите данные сервера</p>
+            <h2 class="text-xl font-black mb-1 uppercase italic text-orange-500">Настройки</h2>
+            <p class="text-[10px] text-neutral-500 mb-6 uppercase tracking-widest">Укажите IP вашего сервера</p>
             
             <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] font-bold text-neutral-400 uppercase ml-1">IP Адрес Сервера</label>
-                    <input type="text" id="ipInput" placeholder="Напр: 172.16.0.1" 
-                        class="w-full bg-neutral-900 border border-neutral-800 p-4 rounded-2xl text-white font-mono mt-1">
-                </div>
-                <button id="saveSettings" class="w-full bg-orange-600 py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-orange-900/20">
-                    Сохранить
-                </button>
-                <button id="closeSettings" class="w-full text-neutral-500 text-sm font-bold mt-4">Закрыть</button>
-            </div>
-        </div>
-
-        <!-- Pattern -->
-        <div class="ornament-bg">
-            <svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#pattern)" /></svg>
-        </div>
-
-        <!-- Header -->
-        <div class="safe-top p-4 flex justify-between items-center z-10">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-[#F2A800] rounded-lg flex items-center justify-center">
-                    <i data-lucide="shield" class="text-white w-5 h-5"></i>
-                </div>
-                <h1 class="font-black text-lg tracking-tighter uppercase italic">NAIRI</h1>
-            </div>
-            <button id="openSettings" class="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center border border-neutral-800">
-                <i data-lucide="settings" class="w-5 h-5 text-neutral-500"></i>
-            </button>
-        </div>
-
-        <!-- Main Content -->
-        <div class="flex-grow flex flex-col items-center justify-center z-10">
-            <div class="relative flex items-center justify-center mb-8">
-                <button id="vpnBtn" class="power-btn">
-                    <i data-lucide="power" id="pwrIcon" class="w-12 h-12 text-neutral-800 transition-colors duration-500"></i>
-                    <span id="btnText" class="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600 mt-3">Connect</span>
-                </button>
-            </div>
-
-            <div class="text-center px-6">
-                <div class="flex items-center justify-center gap-2 mb-1">
-                    <div id="statusDot" class="w-2 h-2 rounded-full bg-neutral-800"></div>
-                    <p id="statusMsg" class="text-xs font-bold text-neutral-500 uppercase tracking-widest">Отключено</p>
-                </div>
-                <p id="activeIp" class="text-[10px] font-mono text-neutral-700 italic">IP не настроен</p>
-            </div>
-        </div>
-
-        <!-- Stats Section -->
-        <div class="px-5 grid grid-cols-2 gap-3 mb-4 z-10">
-            <div class="stat-card">
-                <div class="flex items-center gap-2 mb-1 opacity-50">
-                    <i data-lucide="arrow-down" class="w-3 h-3 text-orange-500"></i>
-                    <span class="text-[8px] font-black uppercase">Download</span>
-                </div>
-                <p id="speed" class="text-lg font-black tracking-tight">0.0 <span class="text-[10px] font-normal text-neutral-600">Mb/s</span></p>
-            </div>
-            <div class="stat-card">
-                <div class="flex items-center gap-2 mb-1 opacity-50">
-                    <i data-lucide="activity" class="w-3 h-3 text-blue-500"></i>
-                    <span class="text-[8px] font-black uppercase">Latency</span>
-                </div>
-                <p id="ping" class="text-lg font-black tracking-tight">-- <span class="text-[10px] font-normal text-neutral-600">ms</span></p>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="safe-bottom bg-black border-t border-neutral-900 p-4 flex justify-around z-10">
-            <button class="flex flex-col items-center gap-1 text-orange-500">
-                <i data-lucide="zap" class="w-5 h-5"></i>
-                <span class="text-[8px] font-black uppercase">VPN</span>
-            </button>
-            <button class="flex flex-col items-center gap-1 text-neutral-700">
-                <i data-lucide="globe" class="w-5 h-5"></i>
-                <span class="text-[8px] font-black uppercase">Nodes</span>
-            </button>
-            <button class="flex flex-col items-center gap-1 text-neutral-700">
-                <i data-lucide="user" class="w-5 h-5"></i>
-                <span class="text-[8px] font-black uppercase">Account</span>
-            </button>
-        </div>
-    </div>
-
-    <script>
-        lucide.createIcons();
-
-        // Elements
-        const vpnBtn = document.getElementById('vpnBtn');
-        const pwrIcon = document.getElementById('pwrIcon');
-        const btnText = document.getElementById('btnText');
-        const statusDot = document.getElementById('statusDot');
-        const statusMsg = document.getElementById('statusMsg');
-        const activeIp = document.getElementById('activeIp');
-        const speed = document.getElementById('speed');
-        const ping = document.getElementById('ping');
-
-        const settingsPanel = document.getElementById('settingsPanel');
-        const openSettings = document.getElementById('openSettings');
-        const closeSettings = document.getElementById('closeSettings');
-        const ipInput = document.getElementById('ipInput');
-        const saveSettings = document.getElementById('saveSettings');
-
-        let isConnected = false;
-        let myIp = localStorage.getItem('nairi_ip') || '';
-
-        // Init IP display
-        if(myIp) activeIp.innerText = `Узел: ${myIp}`;
-
-        // Settings Logic
-        openSettings.onclick = () => settingsPanel.style.display = 'flex';
-        closeSettings.onclick = () => settingsPanel.style.display = 'none';
-        
-        saveSettings.onclick = () => {
-            const val = ipInput.value.trim();
-            if(val) {
-                localStorage.setItem('nairi_ip', val);
-                myIp = val;
-                activeIp.innerText = `Узел: ${myIp}`;
-                settingsPanel.style.display = 'none';
-            }
-        };
-
-        // VPN Logic
-        vpnBtn.onclick = () => {
-            if(!myIp) {
-                settingsPanel.style.display = 'flex';
-                return;
-            }
-
-            if(!isConnected) {
-                btnText.innerText = "LINKING...";
-                setTimeout(() => {
-                    isConnected = true;
-                    vpnBtn.classList.add('active');
-                    pwrIcon.classList.add('text-orange-500');
-                    btnText.innerText = "ACTIVE";
-                    btnText.classList.add('text-orange-500');
-                    statusDot.classList.add('bg-green-500');
-                    statusDot.classList.remove('bg-neutral-800');
-                    statusMsg.innerText = "Подключено";
-                    statusMsg.classList.add('text-green-500');
-                    speed.innerHTML = '48.2 <span class="text-[10px] font-normal text-neutral-600">Mb/s</span>';
-                    ping.innerHTML = '18 <span class="text-[10px] font-normal text-neutral-600">ms</span>';
-                }, 1000);
-            } else {
-                isConnected = false;
-                vpnBtn.classList.remove('active');
-                pwrIcon.classList.remove('text-orange-500');
-                btnText.innerText = "CONNECT";
-                btnText.classList.remove('text-orange-500');
-                statusDot.classList.remove('bg-green-500');
-                statusDot.classList.add('bg-neutral-800');
-                statusMsg.innerText = "Отключено";
-                statusMsg.classList.remove('text-green-500');
-                speed.innerHTML = '0.0 <span class="text-[10px] font-normal text-neutral-600">Mb/s</span>';
-                ping.innerHTML = '-- <span class="text-[10px] font-normal text-neutral-600">ms</span>';
-            }
-        };
-    </script>
-</body>
-</html>
-
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .power-btn.active {
-            border-color: var(--arm-orange);
-            box-shadow: 0 0 40px rgba(242, 168, 0, 0.2);
-            transform: scale(1.05);
-        }
-
-        /* Панель настроек */
-        #settingsPanel {
-            position: absolute;
-            inset: 0;
-            background: rgba(0,0,0,0.95);
-            z-index: 200;
-            display: none;
-            flex-direction: column;
-            padding: 2rem;
-            justify-content: center;
-        }
-
-        .stat-card {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 1.25rem;
-            padding: 0.75rem 1rem;
-        }
-
-        .ornament-bg {
-            position: absolute;
-            inset: 0;
-            opacity: 0.03;
-            pointer-events: none;
-            z-index: 0;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="app-shell relative">
-        <div class="tricolor-header">
-            <div class="bg-[#FF0000] flex-1"></div>
-            <div class="bg-[#0033A0] flex-1"></div>
-            <div class="bg-[#F2A800] flex-1"></div>
-        </div>
-
-        <!-- Settings Panel -->
-        <div id="settingsPanel">
-            <h2 class="text-2xl font-black mb-2 uppercase italic text-orange-500">Настройки</h2>
-            <p class="text-xs text-neutral-500 mb-6 uppercase tracking-widest">Введите данные сервера</p>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] font-bold text-neutral-400 uppercase ml-1">IP Адрес Сервера</label>
-                    <input type="text" id="ipInput" placeholder="Напр: 172.16.0.1" 
-                        class="w-full bg-neutral-900 border border-neutral-800 p-4 rounded-2xl text-white font-mono mt-1">
-                </div>
-                <button id="saveSettings" class="w-full bg-orange-600 py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-orange-900/20">
-                    Сохранить
-                </button>
-                <button id="closeSettings" class="w-full text-neutral-500 text-sm font-bold mt-4">Закрыть</button>
-            </div>
-        </div>
-
-        <!-- Pattern -->
-        <div class="ornament-bg">
-            <svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#pattern)" /></svg>
-        </div>
-
-        <!-- Header -->
-        <div class="safe-top p-4 flex justify-between items-center z-10">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-[#F2A800] rounded-lg flex items-center justify-center">
-                    <i data-lucide="shield" class="text-white w-5 h-5"></i>
-                </div>
-                <h1 class="font-black text-lg tracking-tighter uppercase italic">NAIRI</h1>
-            </div>
-            <button id="openSettings" class="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center border border-neutral-800">
-                <i data-lucide="settings" class="w-5 h-5 text-neutral-500"></i>
-            </button>
-        </div>
-
-        <!-- Main Content -->
-        <div class="flex-grow flex flex-col items-center justify-center z-10">
-            <div class="relative flex items-center justify-center mb-8">
-                <button id="vpnBtn" class="power-btn">
-                    <i data-lucide="power" id="pwrIcon" class="w-12 h-12 text-neutral-800 transition-colors duration-500"></i>
-                    <span id="btnText" class="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600 mt-3">Connect</span>
-                </button>
-            </div>
-
-            <div class="text-center px-6">
-                <div class="flex items-center justify-center gap-2 mb-1">
-                    <div id="statusDot" class="w-2 h-2 rounded-full bg-neutral-800"></div>
-                    <p id="statusMsg" class="text-xs font-bold text-neutral-500 uppercase tracking-widest">Отключено</p>
-                </div>
-                <p id="activeIp" class="text-[10px] font-mono text-neutral-700 italic">IP не настроен</p>
-            </div>
-        </div>
-
-        <!-- Stats Section -->
-        <div class="px-5 grid grid-cols-2 gap-3 mb-4 z-10">
-            <div class="stat-card">
-                <div class="flex items-center gap-2 mb-1 opacity-50">
-                    <i data-lucide="arrow-down" class="w-3 h-3 text-orange-500"></i>
-                    <span class="text-[8px] font-black uppercase">Download</span>
-                </div>
-                <p id="speed" class="text-lg font-black tracking-tight">0.0 <span class="text-[10px] font-normal text-neutral-600">Mb/s</span></p>
-            </div>
-            <div class="stat-card">
-                <div class="flex items-center gap-2 mb-1 opacity-50">
-                    <i data-lucide="activity" class="w-3 h-3 text-blue-500"></i>
-                    <span class="text-[8px] font-black uppercase">Latency</span>
-                </div>
-                <p id="ping" class="text-lg font-black tracking-tight">-- <span class="text-[10px] font-normal text-neutral-600">ms</span></p>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="safe-bottom bg-black border-t border-neutral-900 p-4 flex justify-around z-10">
-            <button class="flex flex-col items-center gap-1 text-orange-500">
-                <i data-lucide="zap" class="w-5 h-5"></i>
-                <span class="text-[8px] font-black uppercase">VPN</span>
-            </button>
-            <button class="flex flex-col items-center gap-1 text-neutral-700">
-                <i data-lucide="globe" class="w-5 h-5"></i>
-                <span class="text-[8px] font-black uppercase">Nodes</span>
-            </button>
-            <button class="flex flex-col items-center gap-1 text-neutral-700">
-                <i data-lucide="user" class="w-5 h-5"></i>
-                <span class="text-[8px] font-black uppercase">Account</span>
-            </button>
-        </div>
-    </div>
-
-    <script>
-        lucide.createIcons();
-
-        // Elements
-        const vpnBtn = document.getElementById('vpnBtn');
-        const pwrIcon = document.getElementById('pwrIcon');
-        const btnText = document.getElementById('btnText');
-        const statusDot = document.getElementById('statusDot');
-        const statusMsg = document.getElementById('statusMsg');
-        const activeIp = document.getElementById('activeIp');
-        const speed = document.getElementById('speed');
-        const ping = document.getElementById('ping');
-
-        const settingsPanel = document.getElementById('settingsPanel');
-        const openSettings = document.getElementById('openSettings');
-        const closeSettings = document.getElementById('closeSettings');
-        const ipInput = document.getElementById('ipInput');
-        const saveSettings = document.getElementById('saveSettings');
-
-        let isConnected = false;
-        let myIp = localStorage.getItem('nairi_ip') || '';
-
-        // Init IP display
-        if(myIp) activeIp.innerText = `Узел: ${myIp}`;
-
-        // Settings Logic
-        openSettings.onclick = () => settingsPanel.style.display = 'flex';
-        closeSettings.onclick = () => settingsPanel.style.display = 'none';
-        
-        saveSettings.onclick = () => {
-            const val = ipInput.value.trim();
-            if(val) {
-                localStorage.setItem('nairi_ip', val);
-                myIp = val;
-                activeIp.innerText = `Узел: ${myIp}`;
-                settingsPanel.style.display = 'none';
-            }
-        };
-
-        // VPN Logic
-        vpnBtn.onclick = () => {
-            if(!myIp) {
-                settingsPanel.style.display = 'flex';
-                return;
-            }
-
-            if(!isConnected) {
-                btnText.innerText = "LINKING...";
-                setTimeout(() => {
-                    isConnected = true;
-                    vpnBtn.classList.add('active');
-                    pwrIcon.classList.add('text-orange-500');
-                    btnText.innerText = "ACTIVE";
-                    btnText.classList.add('text-orange-500');
-                    statusDot.classList.add('bg-green-500');
-                    statusDot.classList.remove('bg-neutral-800');
-                    statusMsg.innerText = "Подключено";
-                    statusMsg.classList.add('text-green-500');
-                    speed.innerHTML = '48.2 <span class="text-[10px] font-normal text-neutral-600">Mb/s</span>';
-                    ping.innerHTML = '18 <span class="text-[10px] font-normal text-neutral-600">ms</span>';
-                }, 1000);
-            } else {
-                isConnected = false;
-                vpnBtn.classList.remove('active');
-                pwrIcon.classList.remove('text-orange-500');
-                btnText.innerText = "CONNECT";
-                btnText.classList.remove('text-orange-500');
-                statusDot.classList.remove('bg-green-500');
-                statusDot.classList.add('bg-neutral-800');
-                statusMsg.innerText = "Отключено";
-                statusMsg.classList.remove('text-green-500');
-                speed.innerHTML = '0.0 <span class="text-[10px] font-normal text-neutral-600">Mb/s</span>';
-                ping.innerHTML = '-- <span class="text-[10px] font-normal text-neutral-600">ms</span>';
-            }
-        };
-    </script>
-</body>
-</html>
-
-
-        const btn = document.getElementById('vpnToggle');
-        const icon = document.getElementById('powerIcon');
-        const text = document.getElementById('statusText');
-        const dot = document.getElementById('dot');
-        const lock = document.getElementById('lockLabel');
-        const ipLab = document.getElementById('ipLabel');
-        const pulse = document.getElementById('pulse');
-        
-        const speedText = document.getElementById('down');
-        const pingText = document.getElementById('ping');
-
-        let active = false;
-        let serverIp = "172.64.15.101"; // Сюда можно вписать ваш IP
-
-        btn.onclick = () => {
-            if (!active) {
-                // Включение
-                text.innerText = "ПОИСК...";
-                setTimeout(() => {
-                    active = true;
-                    btn.classList.add('active');
-                    icon.classList.add('text-[#F2A800]');
-                    text.innerText = "В СЕТИ";
-                    text.classList.add('text-[#F2A800]');
-                    dot.classList.add('active');
-                    lock.innerText = "ЗАЩИЩЕНО";
-                    lock.classList.add('text-[#F2A800]');
-                    ipLab.innerText = `IP: ${serverIp} (Yerevan)`;
-                    pulse.style.display = 'block';
-                    
-                    // Имитация данных
-                    speedText.innerHTML = '54.2 <span class="text-[10px] font-normal text-neutral-600">Mb/s</span>';
-                    pingText.innerHTML = '24 <span class="text-[10px] font-normal text-neutral-600">ms</span>';
-                }, 1000);
-            } else {
-                // Выключение
-                active = false;
-                btn.classList.remove('active');
-                icon.classList.remove('text-[#F2A800]');
-                text.innerText = "ВЫКЛ";
-                text.classList.remove('text-[#F2A800]');
-                dot.classList.remove('active');
-                lock.innerText = "НЕТ ЗАЩИТЫ";
-                lock.classList.remove('text-[#F2A800]');
-                ipLab.innerText = "Сервер: Не подключен";
-                pulse.style.display = 'none';
+                <input type="text" id="ipInput" placeholder="Напр: 172.16.0.1" 
+                    class="w-full bg-neutral-900 border border-neutral-800 p-4 rounded-xl text-white font-mono">
                 
-                speedText.innerHTML = '0.0 <span class="text-[10px] font-normal text-neutral-600">Mb/s</span>';
-                pingText.innerHTML = '-- <span class="text-[10px] font-normal text-neutral-600">ms</span>';
+                <button id="saveSettings" class="w-full bg-orange-600 py-4 rounded-xl font-black uppercase tracking-widest">
+                    Сохранить
+                </button>
+                <button id="closeSettings" class="w-full text-neutral-500 text-xs font-bold py-2">Назад</button>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="safe-top p-4 flex justify-between items-center z-10">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-[#F2A800] rounded-lg flex items-center justify-center">
+                    <i data-lucide="shield" class="text-white w-5 h-5"></i>
+                </div>
+                <h1 class="font-black text-lg tracking-tighter uppercase italic">NAIRI</h1>
+            </div>
+            <button id="openSettings" class="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center border border-neutral-800">
+                <i data-lucide="settings" class="w-4 h-4 text-neutral-500"></i>
+            </button>
+        </div>
+
+        <!-- Кнопка подключения -->
+        <div class="flex-grow flex flex-col items-center justify-center z-10">
+            <button id="vpnBtn" class="power-btn mb-6">
+                <i data-lucide="power" id="pwrIcon" class="w-10 h-10 text-neutral-800 transition-colors"></i>
+                <span id="btnText" class="text-[9px] font-black uppercase tracking-[0.2em] text-neutral-600 mt-2">Connect</span>
+            </button>
+
+            <div class="text-center">
+                <div class="flex items-center justify-center gap-2 mb-1">
+                    <div id="statusDot" class="w-1.5 h-1.5 rounded-full bg-neutral-800"></div>
+                    <p id="statusMsg" class="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Отключено</p>
+                </div>
+                <p id="activeIp" class="text-[9px] font-mono text-neutral-700">IP не настроен</p>
+            </div>
+        </div>
+
+        <!-- Статистика -->
+        <div class="px-4 grid grid-cols-2 gap-2 mb-4 z-10">
+            <div class="stat-card text-center">
+                <span class="text-[8px] font-black uppercase text-neutral-600 block mb-1">Download</span>
+                <p id="speed" class="text-base font-black">0.0 <span class="text-[10px] font-normal text-neutral-700">Mb/s</span></p>
+            </div>
+            <div class="stat-card text-center">
+                <span class="text-[8px] font-black uppercase text-neutral-600 block mb-1">Latency</span>
+                <p id="ping" class="text-base font-black">-- <span class="text-[10px] font-normal text-neutral-700">ms</span></p>
+            </div>
+        </div>
+
+        <!-- Нижнее меню -->
+        <div class="safe-bottom bg-black/50 border-t border-neutral-900 p-4 flex justify-around z-10">
+            <div class="text-orange-500 flex flex-col items-center gap-1">
+                <i data-lucide="zap" class="w-5 h-5"></i>
+                <span class="text-[7px] font-black uppercase">VPN</span>
+            </div>
+            <div class="text-neutral-700 flex flex-col items-center gap-1">
+                <i data-lucide="globe" class="w-5 h-5"></i>
+                <span class="text-[7px] font-black uppercase">Nodes</span>
+            </div>
+            <div class="text-neutral-700 flex flex-col items-center gap-1">
+                <i data-lucide="user" class="w-5 h-5"></i>
+                <span class="text-[7px] font-black uppercase">User</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const vpnBtn = document.getElementById('vpnBtn');
+        const pwrIcon = document.getElementById('pwrIcon');
+        const btnText = document.getElementById('btnText');
+        const statusDot = document.getElementById('statusDot');
+        const statusMsg = document.getElementById('statusMsg');
+        const activeIp = document.getElementById('activeIp');
+        const speed = document.getElementById('speed');
+        const ping = document.getElementById('ping');
+
+        const settingsPanel = document.getElementById('settingsPanel');
+        const openSettings = document.getElementById('openSettings');
+        const closeSettings = document.getElementById('closeSettings');
+        const ipInput = document.getElementById('ipInput');
+        const saveSettings = document.getElementById('saveSettings');
+
+        let isConnected = false;
+        let myIp = localStorage.getItem('nairi_ip') || '';
+
+        if(myIp) {
+            activeIp.innerText = `Узел: ${myIp}`;
+            ipInput.value = myIp;
+        }
+
+        openSettings.onclick = () => settingsPanel.style.display = 'flex';
+        closeSettings.onclick = () => settingsPanel.style.display = 'none';
+        
+        saveSettings.onclick = () => {
+            const val = ipInput.value.trim();
+            if(val) {
+                localStorage.setItem('nairi_ip', val);
+                myIp = val;
+                activeIp.innerText = `Узел: ${myIp}`;
+                settingsPanel.style.display = 'none';
             }
         };
 
-        // Запрет свайпа для обновления на мобилках
-        document.addEventListener('touchmove', (e) => {
-            if (e.touches.length > 1) e.preventDefault();
-        }, { passive: false });
+        vpnBtn.onclick = () => {
+            if(!myIp) {
+                settingsPanel.style.display = 'flex';
+                return;
+            }
+
+            if(!isConnected) {
+                btnText.innerText = "LINKING...";
+                setTimeout(() => {
+                    isConnected = true;
+                    vpnBtn.classList.add('active');
+                    pwrIcon.classList.add('text-orange-500');
+                    btnText.innerText = "ACTIVE";
+                    btnText.classList.add('text-orange-500');
+                    statusDot.classList.add('bg-green-500');
+                    statusDot.classList.remove('bg-neutral-800');
+                    statusMsg.innerText = "Подключено";
+                    statusMsg.classList.add('text-green-500');
+                    speed.innerHTML = '42.5 <span class="text-[10px] font-normal text-neutral-700">Mb/s</span>';
+                    ping.innerHTML = '12 <span class="text-[10px] font-normal text-neutral-700">ms</span>';
+                }, 800);
+            } else {
+                isConnected = false;
+                vpnBtn.classList.remove('active');
+                pwrIcon.classList.remove('text-orange-500');
+                btnText.innerText = "CONNECT";
+                btnText.classList.remove('text-orange-500');
+                statusDot.classList.remove('bg-green-500');
+                statusDot.classList.add('bg-neutral-800');
+                statusMsg.innerText = "Отключено";
+                statusMsg.classList.remove('text-green-500');
+                speed.innerHTML = '0.0 <span class="text-[10px] font-normal text-neutral-700">Mb/s</span>';
+                ping.innerHTML = '-- <span class="text-[10px] font-normal text-neutral-700">ms</span>';
+            }
+        };
     </script>
 </body>
 </html>
