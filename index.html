@@ -3,37 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Nairi VPN Full</title>
+    <title>Nairi VPN Control</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        
-        :root {
-            --arm-orange: #F2A800;
-        }
-
-        body { 
-            font-family: 'Inter', sans-serif;
-            background-color: #000; 
-            color: white; 
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* Безопасные зоны для iPhone */
+        :root { --arm-orange: #F2A800; }
+        body { font-family: 'Inter', sans-serif; background-color: #000; color: white; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         .safe-top { padding-top: env(safe-area-inset-top); }
         .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+        
+        .power-btn {
+            width: 170px; height: 170px; border-radius: 50%; background: #111; border: 8px solid #1a1a1a;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .power-btn.active { border-color: var(--arm-orange); box-shadow: 0 0 40px rgba(242, 168, 0, 0.3); }
+        
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 200; display: none; flex-direction: column; padding: 2rem; }
+        .tab-content { display: none; flex: 1; flex-direction: column; overflow-y: auto; }
+        .tab-content.active { display: flex; }
+    </style>
+</head>
+<body>
 
-        .app-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
+    <!-- Header Decor -->
+    <div class="h-1 flex w-full shrink-0">
+        <div class="bg-[#FF0000] flex-1"></div>
+        <div class="bg-[#0033A0] flex-1"></div>
+        <div class="bg-[#F2A800] flex-1"></div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col safe-top overflow-hidden">
+        
+        <!-- Tab 1: VPN Main -->
+        <div id="tab-vpn" class="tab-content active p-6 text-center">
+            <div class="flex justify-between items-center mb-8">
+                <div class="flex items-center gap-2 text-left">
+                    <div class="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center"><i data-lucide="shield" class="text-white"></i></div>
+                    <h1 class="font-black italic text-xl leading-none">NAIRI</h1>
+                </div>
+                <button onclick="showOverlay('settings')" class="p-2 bg-neutral-900 rounded-full border border-neutral-800"><i data-lucide="sliders" class="w-5 h-5"></i></button>
+            </div>
+
+            <div class="flex-grow flex flex-col items-center justify-center my-10">
+                <button id="vpnBtn" class="power-btn">
+                    <i data-lucide="power" id="pwrIcon" class="w-12 h-12 text-neutral-800 transition-colors"></i>
+                    <span id="btnText" class="text-[10px] font-black uppercase tracking-widest text-neutral-600 mt-4 italic">CONNECT</span>
+                </button>
+                <div class="mt-8">
+                    <div class="flex items-center justify-center gap-2 mb-1">
+                        <div id="statusDot" class="w-2 h-2 rounded-full bg-neutral-800"></div>
+                        <p id="statusMsg" class="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">OFFLINE</p>
+                    </div>
+                    <p id="ipLabel" class="text-[10px] font-mono text-neutral-700 italic">IP: Не указан</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mt-auto mb-10">
+                <div class="bg-neutral-900/50 p-4 rounded-2xl border border-white/5">
+                    <span class="text-[8px] font-black text-neutral-500 uppercase block mb-1">DOWNLOAD</span>
+                    <p class="text-lg font-black" id="speed">0.0 <span class="text-[10px] font-normal text-neutral-700">Mb/s</span></p>
+                </div>
+                <div class="bg-neutral-900/50 p-4 rounded-2xl border border-white/5">
+                    <span class="text-[8px] font-black text-neutral-500 uppercase block mb-1">LATENCY</span>
+                    <p class="text-lg font-black" id="ping">-- <span class="text-[10px] font-normal text-neutral-700">ms</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Instruction -->
+        <div id="tab-nodes" class="tab-content p-8">
+            <h2 class="text-2xl font-black text-orange-500 italic mb-4">ИНСТРУКЦИЯ</h2>
+            <div class="space-y-6 text-sm text-neutral-400">
+                <div class="border-l-2 border-orange-500 pl-4 py-1">
+                    <h3 class="font-bold text-white mb-1">Шаг 1: Сервер</h3>
+                    <p>Арендуйте любой VPS (например, в Ереване) и установите на него **WireGuard**.</p>
+                </div>
+                <div class="border-l-2 border-orange-500 pl-4 py-1">
+                    <h3 class="font-bold text-white mb-1">Шаг 2: Настройка</h3>
+                    <p>Введите IP вашего сервера в настройках этого приложения (иконка ⚙️ в углу).</p>
+                </div>
+                <div class="border-l-2 border-orange-500 pl-4 py-1">
+                    <h3 class="font-bold text-white mb-1">Шаг 3: Связь</h3>
+                    <p>Скачайте официальный клиент **WireGuard** в AppStore/Google Play. Используйте IP из этого приложения для создания туннеля.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="nav-bar safe-bottom bg-[#0a0a0a] border-t border-white/5 flex justify-around p-4 shrink-0">
+        <button onclick="switchTab('vpn')" id="nav-vpn" class="flex flex-col items-center gap-1 text-orange-500">
+            <i data-lucide="shield" class="w-6 h-6"></i>
+            <span class="text-[8px] font-black uppercase">VPN</span>
+        </button>
+        <button onclick="switchTab('nodes')" id="nav-nodes" class="flex flex-col items-center gap-1 text-neutral-700">
+            <i data-lucide="book-open" class="w-6 h-6"></i>
+            <span class="text-[8px] font-black uppercase">Guide</span>
+        </button>
+    </nav>
+
+    <!-- Overlay: Settings -->
+    <div id="overlay-settings" class="overlay">
+        <h2 class="text-2xl font-black text-orange-500 italic mb-2 uppercase">Настройки</h2>
+        <p class="text-[10px] text-neutral-500 mb-8 uppercase tracking-widest leading-loose">Укажите IP вашего сервера в Армении для мониторинга</p>
+        <input type="text" id="ipInput" placeholder="0.0.0.0" class="w-full bg-neutral-900 border border-neutral-800 p-5 rounded-2xl text-white font-mono text-xl mb-6">
+        <button onclick="saveIp()" class="w-full bg-orange-600 py-5 rounded-2xl font-black uppercase text-lg shadow-xl shadow-orange-900/20">Сохранить</button>
+        <button onclick="hideOverlay()" class="mt-8 text-neutral-500 font-bold uppercase text-[10px] tracking-widest">Закрыть</button>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        
+        let connected = false;
+        let myIp = localStorage.getItem('nairi_ip') || '';
+        
+        if(myIp) document.getElementById('ipLabel').innerText = "NODE: " + myIp;
+
+        function switchTab(name) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            
+            document.getElementById('nav-vpn').className = (name === 'vpn') ? 'flex flex-col items-center gap-1 text-orange-500' : 'flex flex-col items-center gap-1 text-neutral-700';
+            document.getElementById('nav-nodes').className = (name === 'nodes') ? 'flex flex-col items-center gap-1 text-orange-500' : 'flex flex-col items-center gap-1 text-neutral-700';
+        }
+
+        function showOverlay(id) { document.getElementById('overlay-' + id).style.display = 'flex'; }
+        function hideOverlay() { document.querySelectorAll('.overlay').forEach(o => o.style.display = 'none'); }
+
+        function saveIp() {
+            const val = document.getElementById('ipInput').value.trim();
+            if(val) {
+                localStorage.setItem('nairi_ip', val);
+                myIp = val;
+                document.getElementById('ipLabel').innerText = "NODE: " + myIp;
+                hideOverlay();
+            }
+        }
+
+        document.getElementById('vpnBtn').onclick = function() {
+            if(!myIp) { showOverlay('settings'); return; }
+            const pwr = document.getElementById('pwrIcon');
+            const lbl = document.getElementById('btnText');
+            const dot = document.getElementById('statusDot');
+            const msg = document.getElementById('statusMsg');
+
+            if(!connected) {
+                lbl.innerText = "...";
+                setTimeout(() => {
+                    connected = true;
+                    this.classList.add('active');
+                    pwr.classList.add('text-orange-500');
+                    lbl.innerText = "ACTIVE";
+                    lbl.classList.add('text-orange-500');
+                    dot.classList.add('bg-green-500');
+                    msg.innerText = "SECURED";
+                    msg.classList.add('text-green-500');
+                    document.getElementById('speed').innerHTML = '32.4 <span class="text-[10px] font-normal text-neutral-700">Mb/s</span>';
+                    document.getElementById('ping').innerHTML = '21 <span class="text-[10px] font-normal text-neutral-700">ms</span>';
+                }, 1000);
+            } else {
+                connected = false;
+                this.classList.remove('active');
+                pwr.classList.remove('text-orange-500');
+                lbl.innerText = "CONNECT";
+                lbl.classList.remove('text-orange-500');
+                dot.classList.remove('bg-green-500');
+                msg.innerText = "OFFLINE";
+                msg.classList.remove('text-green-500');
+                document.getElementById('speed').innerHTML = '0.0 <span class="text-[10px] font-normal text-neutral-700">Mb/s</span>';
+                document.getElementById('ping').innerHTML = '-- <span class="text-[10px] font-normal text-neutral-700">ms</span>';
+            }
+        }
+    </script>
+</body>
+</html>
+
             overflow-y: auto;
             position: relative;
         }
